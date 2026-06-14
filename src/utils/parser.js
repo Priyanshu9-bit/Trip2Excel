@@ -29,26 +29,24 @@ export function parseNotes(text) {
       continue;
     }
 
-    // Vehicle Entry
+    // Vehicle
     if (isVehicleLine(line)) {
-      let vehicleLine = line;
-
       let vehicleType = "";
+      let vehicleNumber = line;
 
-      if (vehicleLine.includes("Pickup")) {
+      if (line.includes("Pickup")) {
         vehicleType = "Pickup";
-      } else if (vehicleLine.includes("TATA Ace")) {
+        vehicleNumber = line.replace("Pickup", "").trim();
+      } else if (line.includes("TATA Ace")) {
         vehicleType = "TATA Ace";
-      } else if (vehicleLine.includes("Mini Truck")) {
+        vehicleNumber = line.replace("TATA Ace", "").trim();
+      } else if (line.includes("Mini Truck")) {
         vehicleType = "Mini Truck";
+        vehicleNumber = line
+          .replace("Mini Truck 14ft.", "")
+          .replace("Mini Truck", "")
+          .trim();
       }
-
-      const vehicleNumber = vehicleLine
-        .replace("Pickup", "")
-        .replace("TATA Ace", "")
-        .replace("Mini Truck 14ft.", "")
-        .replace("Mini Truck", "")
-        .trim();
 
       let ticketNumber = "";
       let from = "Hirakud";
@@ -56,7 +54,7 @@ export function parseNotes(text) {
       let rate = 0;
       let detention = 0;
 
-      // Collect block until next vehicle/date
+      // Collect all lines belonging to this trip
       let block = [];
 
       for (let j = i + 1; j < lines.length; j++) {
@@ -82,7 +80,7 @@ export function parseNotes(text) {
         ticketNumber = ticketMatch[1];
       }
 
-      // Route
+      // Destination
       const routeMatch = blockText.match(/Hirakud\s+to\s+(.+)/i);
 
       if (routeMatch) {
@@ -96,20 +94,24 @@ export function parseNotes(text) {
         rate = Number(rateMatches[0][1]);
       }
 
-      // Detention
+      // Detention / Detaintion
       const detentionMatch = blockText.match(
-        /Det[a-zA-Z]*\s*charge\s*=\s*(\d+)/i
+        /(Detention|Detaintion).*?=\s*(\d+)/i
       );
 
       if (detentionMatch) {
-        detention = Number(detentionMatch[1]);
+        detention = Number(detentionMatch[2]);
       }
 
-      // Clean destination
+      // Clean destination text
       to = to
         .replace(/Ticket\s*no.*$/i, "")
-        .replace(/=\s*\d+.*/g, "")
         .replace(/1 Day.*$/i, "")
+        .replace(/2 Day.*$/i, "")
+        .replace(/3 Day.*$/i, "")
+        .replace(/Detention.*$/i, "")
+        .replace(/Detaintion.*$/i, "")
+        .replace(/=\s*\d+.*/g, "")
         .trim();
 
       rows.push({
