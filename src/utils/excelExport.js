@@ -18,7 +18,6 @@ export async function exportExcel(data) {
     { header: "Total", key: "total", width: 15 },
   ];
 
-  // Header Style
   worksheet.getRow(1).font = {
     bold: true,
     size: 12,
@@ -26,6 +25,10 @@ export async function exportExcel(data) {
 
   // Data Rows
   data.forEach((row) => {
+    const rate = Number(row.rate || 0);
+    const detention = Number(row.detention || 0);
+    const total = rate + detention;
+
     worksheet.addRow({
       slNo: row.slNo,
       date: row.date,
@@ -34,13 +37,13 @@ export async function exportExcel(data) {
       ticketNumber: row.ticketNumber,
       from: row.from,
       to: row.to,
-      rate: row.rate,
-      detention: row.detention,
-      total: row.total,
+      rate,
+      detention,
+      total,
     });
   });
 
-  // Totals
+  // Summary
   const totalTrips = data.length;
 
   const totalRate = data.reduce(
@@ -53,10 +56,7 @@ export async function exportExcel(data) {
     0
   );
 
-  const grandTotal = data.reduce(
-    (sum, row) => sum + Number(row.total || 0),
-    0
-  );
+  const grandTotal = totalRate + totalDetention;
 
   worksheet.addRow([]);
 
