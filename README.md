@@ -18,3 +18,6 @@ npm run dev
 ```
 
 Then open the local URL shown by Vite.
+
+
+https://trip2-excel-hnv9.vercel.app/
